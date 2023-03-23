@@ -1,0 +1,23 @@
+[
+  {
+    "model": "quickbudget.Category",
+    "fields": {
+      "name": "food",
+      "description": "all that I eat"
+    }
+  },
+    {
+    "model": "quickbudget.Category",
+    "fields": {
+      "name": "bills",
+      "description": "all that I need to pay"
+    }
+  },
+    {
+    "model": "quickbudget.Category",
+    "fields": {
+      "name": "entertainment",
+      "description": "all that I consume"
+    }
+  }
+]
