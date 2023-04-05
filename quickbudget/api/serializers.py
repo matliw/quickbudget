@@ -6,33 +6,48 @@ from quickbudget.models import Budget, Expense, Category
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username"]
+        fields = ['id', 'username']
+        read_only_fields = ('id',)
 
 
 class BudgetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Budget
         fields = ['budget_id', 'name', 'monthly_limit', 'description', 'created_timestamp']
-        read_only_fields = ('budget_id',)
+
+        read_only_fields = ('budget_id', 'created_timestamp')
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class BudgetListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Budget
+        fields = ['name', 'description', 'created_timestamp']
+
+        read_only_fields = ('created_timestamp',)
+
+
+class CategoriesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['category_id', 'name', 'description']
+        fields = ['name', 'description']
+
+
+class CategoryDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'description']
         read_only_fields = ('category_id',)
 
 
 class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
-        fields = ['expense_id', 'name', 'total', 'description',
-                  'budget', 'category',
-                  'created_timestamp']
-        read_only_fields = ('expense_id',)
+        fields = ['id', 'name', 'total', 'description', 'budget', 'category', 'created_timestamp']
+        read_only_fields = ('id', 'created_timestamp',)
 
         def create(self, validated_data, **kwargs):
-            validated_data['budget_id'] = self.context['request'].parser_context['kwargs']['pk']
+            validated_data['id'] = \
+            self.context['request'].parser_context['kwargs']['expense']
             return super(ExpenseSerializer, self).create(validated_data)
 
 
@@ -42,4 +57,13 @@ class BudgetExpenseListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Budget
-        fields = ['budget_id', 'name', 'expense_items', 'members']
+        fields = ['name', 'expense_items', 'members']
+
+
+class ExpensesByCategoriesSerializer(serializers.ModelSerializer):
+    categories = CategoriesSerializer(many=True, read_only=True)
+    expense_items = ExpenseSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Expense
+        fields = ['name', 'description', 'created_timestamp', 'total', 'category']

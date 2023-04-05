@@ -1,6 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 
-from quickbudget.api.serializers import BudgetSerializer, CategorySerializer, ExpenseSerializer
+from quickbudget.api.serializers import BudgetSerializer, CategoriesSerializer, ExpenseSerializer
 from quickbudget.models import Budget, Category, Expense
 
 
@@ -11,7 +11,7 @@ class BudgetViewSet(ModelViewSet):
 
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+    serializer_class = CategoriesSerializer
 
 
 class ExpenseViewSet(ModelViewSet):
