@@ -23,6 +23,11 @@ class ListExpensesList(generics.ListAPIView):
     serializer_class = BudgetExpenseListSerializer
 
 
+class CreateExpense(generics.CreateAPIView):
+    queryset = Expense.objects.all()
+    serializer_class = ExpenseSerializer
+
+
 class ExpensesByCategories(generics.ListAPIView):
     queryset = Expense.objects.all()
     serializer_class = ExpensesByCategoriesSerializer
