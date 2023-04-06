@@ -1,0 +1,18 @@
+[
+  {
+    "model": "quickbudget.Budget",
+    "fields": {
+      "name": "my_first_budget",
+      "monthly_limit": 1234,
+      "created_timestamp": "10:00"
+    }
+  },
+    {
+    "model": "quickbudget.Budget",
+    "fields": {
+      "name": "my_second_budget",
+      "monthly_limit": 67789,
+      "created_timestamp": "22:22"
+    }
+  }
+]
