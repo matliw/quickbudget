@@ -133,8 +133,8 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Your Project API',
-    'DESCRIPTION': 'Your project description',
+    'TITLE': 'Quickbudget API',
+    'DESCRIPTION': 'Track your expenses, quickly',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }
