@@ -5,9 +5,10 @@
       "name": "Chicken",
       "total": 123,
       "description": "",
-      "budget": "09352072-05f9-423a-a40b-401a2abc82c6",
-      "created_timestamp": "11:11",
-      "category": "f3cd8475-6713-4d79-ade9-93e27ce23efc"
+      "budget_id": "09352072-05f9-423a-a40b-401a2abc82c6",
+      "created_timestamp": "2022-01-02 11:11",
+      "category": "f3cd8475-6713-4d79-ade9-93e27ce23efc",
+      "user":  ""
     }
   }
 ]

@@ -1,15 +1,17 @@
 from django.urls import path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from quickbudget.views import ListExpensesList, ExpenseDetail, BudgetDetail, \
-    ListCategoryList, ListBudgets, ExpensesByCategories, CreateExpense
+    ListCategoryList, ListBudgets
+
 
 urlpatterns = [
-    path("api/budgets/", ListBudgets.as_view(), name="all_budgets"),
-    path("api/budgets/", BudgetDetail.as_view(), name="add_budget"),
-    path("api/budgets/<uuid:budget_id>/", BudgetDetail.as_view(), name="budget_detail"),
-    path("api/budgets/<uuid:budget_id>/expenses/", ListExpensesList.as_view(), name="list_budget_expenses"),
-    path("api/budgets/<uuid:budget_id>/expenses/", CreateExpense.as_view(), name="list_budget_expenses"),
-    path("api/budgets/<uuid:budget_id>/expenses/<str:category_name>/", ExpensesByCategories.as_view(), name="expenses_by_category"),
-    path("api/budgets/<uuid:budget_id>/expenses/<uuid:expense_id>", ExpenseDetail.as_view(), name="expense_details"),
+    path("api/budgets/", ListBudgets.as_view(), name="get_add_budgets"),
+    path("api/budgets/", BudgetDetail.as_view(), name="get_update_remove_budget"),
+    path("api/budgets/<uuid:budget_id>/expenses/", ListExpensesList.as_view(), name="list_add_budget_expenses"),
+    path("api/budgets/<uuid:budget_id>/expenses/<uuid:expense_id>", ExpenseDetail.as_view(), name="get_update_remove_expense_details"),
     path("api/categories/", ListCategoryList.as_view(), name="category_list"),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+
 ]

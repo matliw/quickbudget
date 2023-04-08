@@ -1,7 +1,7 @@
 from rest_framework import generics
 from quickbudget.api.serializers import ExpenseSerializer, \
-    BudgetExpenseListSerializer, CategoriesSerializer, BudgetSerializer, \
-    BudgetListSerializer, ExpensesByCategoriesSerializer
+    ExpenseListSerializer, CategoriesSerializer, BudgetSerializer, \
+    BudgetListSerializer
 from quickbudget.models import Budget, Expense, Category
 
 
@@ -18,29 +18,18 @@ class BudgetDetail(generics.RetrieveUpdateDestroyAPIView):
         return serializer.save(members=[self.request.user])
 
 
-class ListExpensesList(generics.ListAPIView):
+class ListExpensesList(generics.ListCreateAPIView):
     queryset = Expense.objects.all()
-    serializer_class = BudgetExpenseListSerializer
-
-
-class CreateExpense(generics.CreateAPIView):
-    queryset = Expense.objects.all()
-    serializer_class = ExpenseSerializer
-
-
-class ExpensesByCategories(generics.ListAPIView):
-    queryset = Expense.objects.all()
-    serializer_class = ExpensesByCategoriesSerializer
-    lookup_url_kwarg = "category_name"
+    serializer_class = ExpenseListSerializer
 
 
 class ExpenseDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
-    lookup_url_kwarg = "expense_id"
+    lookup_url_kwarg = "expense"
 
-    def perform_create(self, serializer):
-        return serializer.save(members=[self.request.user])
+    # def perform_create(self, serializer):
+    #     return serializer.save(members=[self.request.user])
 
 
 class ListCategoryList(generics.ListCreateAPIView):

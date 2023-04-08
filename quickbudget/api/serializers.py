@@ -13,9 +13,14 @@ class UserSerializer(serializers.ModelSerializer):
 class BudgetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Budget
-        fields = ['budget_id', 'name', 'monthly_limit', 'description', 'created_timestamp']
+        fields = ['id', 'name', 'budget_limit', 'description', 'created_timestamp']
 
         read_only_fields = ('budget_id', 'created_timestamp')
+
+        def create(self, validated_data, **kwargs):
+            validated_data['id'] = \
+            self.context['request'].parser_context['kwargs']['expense']
+            return super(ExpenseSerializer, self).create(validated_data)
 
 
 class BudgetListSerializer(serializers.ModelSerializer):
@@ -32,17 +37,10 @@ class CategoriesSerializer(serializers.ModelSerializer):
         fields = ['name', 'description']
 
 
-class CategoryDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['id', 'name', 'description']
-        read_only_fields = ('category_id',)
-
-
 class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
-        fields = ['id', 'name', 'total', 'description', 'budget', 'category', 'created_timestamp']
+        fields = ['id', 'name', 'total', 'description', 'budget_id', 'category', 'created_timestamp']
         read_only_fields = ('id', 'created_timestamp',)
 
         def create(self, validated_data, **kwargs):
@@ -51,13 +49,13 @@ class ExpenseSerializer(serializers.ModelSerializer):
             return super(ExpenseSerializer, self).create(validated_data)
 
 
-class BudgetExpenseListSerializer(serializers.ModelSerializer):
+class ExpenseListSerializer(serializers.ModelSerializer):
     expense_items = ExpenseSerializer(many=True, read_only=True)
-    members = UserSerializer(many=True, read_only=True)
+    # members = UserSerializer(many=True, read_only=True)
 
     class Meta:
         model = Budget
-        fields = ['name', 'expense_items', 'members']
+        fields = ['name', 'expense_items']
 
 
 class ExpensesByCategoriesSerializer(serializers.ModelSerializer):
