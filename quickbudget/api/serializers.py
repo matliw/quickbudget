@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from quickbudget.models import Budget, Expense, Category
+from quickbudget_app.models import Budget, Expense, Category
 
 
 class UserSerializer(serializers.ModelSerializer):
