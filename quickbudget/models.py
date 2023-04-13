@@ -20,7 +20,7 @@ class Budget(models.Model):
     budget_limit = models.DecimalField(max_digits=8, decimal_places=2, null=True, validators=[MinValueValidator(Decimal('0.01'))])
     description = models.CharField(max_length=200, null=True, blank=True)
     created_timestamp = models.DateTimeField(auto_now=True)
-    # members = models.ManyToManyField("auth.User")
+    members = models.ManyToManyField("auth.User")
 
     def __str__(self):
         return f"{self.name}"
