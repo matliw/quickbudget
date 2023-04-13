@@ -3,6 +3,13 @@ from rest_framework import serializers
 from quickbudget.models import Budget, Expense, Category
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username']
+        read_only_fields = ('id',)
+
+
 class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
@@ -17,17 +24,11 @@ class ExpenseSerializer(serializers.ModelSerializer):
 
 class BudgetSerializer(serializers.ModelSerializer):
     expenses = ExpenseSerializer(many=True, read_only=True)
+    members = UserSerializer(many=True, read_only=True)
 
     class Meta:
         model = Budget
-        fields = ['id', 'name', 'budget_limit', 'description', 'created_timestamp', 'expenses']
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username']
-        read_only_fields = ('id',)
+        fields = ['id', 'name', 'budget_limit', 'description', 'created_timestamp', 'expenses', 'members']
 
 
 class CategoriesSerializer(serializers.ModelSerializer):

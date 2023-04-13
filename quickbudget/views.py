@@ -7,7 +7,10 @@ from quickbudget.models import Budget, Expense, Category
 
 class ListAddBudgets(generics.ListCreateAPIView):
     queryset = Budget.objects.all()
-    serializer_class = BudgetSerializer  # without expenses
+    serializer_class = BudgetSerializer
+
+    def perform_create(self, serializer):
+        return serializer.save(members=[self.request.user])
 
 
 class BudgetDetail(generics.RetrieveUpdateDestroyAPIView):
