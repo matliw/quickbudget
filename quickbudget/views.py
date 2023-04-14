@@ -11,6 +11,9 @@ class ListAddBudgets(generics.ListCreateAPIView):
     queryset = Budget.objects.all()
     serializer_class = BudgetSerializer
 
+    def get_queryset(self):
+        return Budget.objects.filter(members=self.request.user)
+
     def perform_create(self, serializer):
         return serializer.save(members=[self.request.user])
 
