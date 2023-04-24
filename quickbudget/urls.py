@@ -8,7 +8,7 @@ from quickbudget.views import ExpenseDetail, BudgetDetail, \
     QuickbudgetUsers
 
 urlpatterns = [
-    path("api-auth/", include("rest_framework.urls", namespace="rest-framework")),
+    path("/api/api-auth/", include("rest_framework.urls", namespace="rest-framework")),
     path("api/token/", TokenObtainPairView.as_view(), name="token-obtain_pair"),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path("api/budgets/", ListAddBudgets.as_view(), name="get-add-budgets"),
@@ -17,9 +17,9 @@ urlpatterns = [
     path("api/budgets/<uuid:budget_id>/expenses/", ListAddExpenses.as_view(), name="list-add-budget-expenses"),
     path("api/budgets/<uuid:budget_id>/expenses/<uuid:expense_id>/", ExpenseDetail.as_view(), name="get-update-remove-expense-details"),
     path("api/categories/", ListCategoryList.as_view(), name="category-list"),
-    path("schema/", SpectacularAPIView.as_view(), name="schema"),  # yaml schema is generated
-    path("docs/swagger-ui/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),  # swagger-ui endpoint for API visualization
-    path("users/", QuickbudgetUsers.as_view(), name="application-user-add-remove-members")
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),  # yaml schema is generated
+    path("api/docs/swagger-ui/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),  # swagger-ui endpoint for API visualization
+    path("api/users/", QuickbudgetUsers.as_view(), name="application-user-add-remove-members")
 ]
 
 
