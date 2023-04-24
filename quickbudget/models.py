@@ -25,6 +25,7 @@ class Budget(models.Model):
 
 
 class Category(models.Model):
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=120)
     description = models.TextField(max_length=250, null=True, blank=True)

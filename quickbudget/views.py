@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-
 from quickbudget.api.permissions import (
     BudgetMembersOnly,
     AllBudgetExpenseMembersOnly,
@@ -52,7 +51,10 @@ class ListAddExpenses(generics.ListCreateAPIView):
 
     def get_queryset(self):
         budget = self.kwargs["budget_id"]
-        queryset = Expense.objects.filter(budget_id=budget)
+        queryset = Expense.objects.filter(budget_id=budget).order_by("created_timestamp")
+        category = self.request.query_params.get("category")
+        if category is not None:
+            queryset = queryset.filter(category=category)
 
         return queryset
 
