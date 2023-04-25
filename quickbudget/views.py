@@ -1,7 +1,6 @@
-from rest_framework import generics
+from rest_framework import generics, status, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
 
 from quickbudget.api.permissions import (
     BudgetMembersOnly,
@@ -48,6 +47,8 @@ class AddExpenses(generics.CreateAPIView):
 class ListAddExpenses(generics.ListCreateAPIView):
     serializer_class = ExpenseSerializer
     permission_classes = [AllBudgetExpenseMembersOnly]
+    filter_backends = (filters.OrderingFilter,)
+    ordering_fields = ["name", "total", "created_timestamp"]
 
     def get_queryset(self):
         budget = self.kwargs["budget_id"]
@@ -102,7 +103,6 @@ class BudgetMembers(APIView):
 class QuickbudgetUsers(APIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-
     permission_classes = [IsPostOrIsAuthenticated]
 
     def post(self, request, format=None):
@@ -119,3 +119,17 @@ class QuickbudgetUsers(APIView):
         user.delete()
 
         return Response("bye bye", status=status.HTTP_204_NO_CONTENT)
+
+
+class SearchBudgetExpenses(generics.ListAPIView):
+    queryset = Expense.objects.all()
+    serializer_class = ExpenseSerializer
+
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ["name"]
+
+    def get_queryset(self):
+        all_user_budgets = Budget.objects.filter(members=self.request.user)
+        queryset = Expense.objects.filter(budget_id__in=all_user_budgets)
+
+        return queryset

@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, \
 
 from quickbudget.views import ExpenseDetail, BudgetDetail, \
     ListCategoryList, ListAddBudgets, ListAddExpenses, BudgetMembers, \
-    QuickbudgetUsers
+    QuickbudgetUsers, SearchBudgetExpenses
 
 urlpatterns = [
     path("/api/api-auth/", include("rest_framework.urls", namespace="rest-framework")),
@@ -19,7 +19,8 @@ urlpatterns = [
     path("api/categories/", ListCategoryList.as_view(), name="category-list"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),  # yaml schema is generated
     path("api/docs/swagger-ui/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),  # swagger-ui endpoint for API visualization
-    path("api/users/", QuickbudgetUsers.as_view(), name="application-user-add-remove-members")
+    path("api/users/", QuickbudgetUsers.as_view(), name="application-user-add-remove-members"),
+    path("api/search/", SearchBudgetExpenses.as_view(), name="search-for-expenses")
 ]
 
 
