@@ -22,13 +22,20 @@ class ListAddBudgets(generics.ListCreateAPIView):
     queryset = Budget.objects.all()
     serializer_class = BudgetSerializer
 
+
     def perform_create(self, serializer):
-        return serializer.save(members=[self.request.user])
+        # Set the creator field to the current authenticated user
+        serializer.validated_data['creator'] = self.request.user
+        # Create the budget object
+        budget = serializer.save()
+
+        # Add the current user as a member of the budget
+        budget.members.add(self.request.user)
+
+        return Response(serializer.data)
 
     def get_queryset(self):
-        return Budget.objects.filter(members=self.request.user).order_by(
-            "-last_interaction"
-        )
+        return Budget.objects.filter(members=self.request.user)
 
 
 class BudgetDetail(generics.RetrieveUpdateDestroyAPIView):

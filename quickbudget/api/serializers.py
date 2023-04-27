@@ -52,6 +52,7 @@ class BudgetSerializer(serializers.ModelSerializer):
             "created_timestamp",
             "expenses",
             "members",
+            "creator"
         ]
 
 
