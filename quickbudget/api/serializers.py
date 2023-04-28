@@ -28,6 +28,7 @@ class ExpenseSerializer(serializers.ModelSerializer):
             "category",
             "created_timestamp",
             "budget_id",
+            "author"
         ]
         read_only_fields = ("id", "created_timestamp", "budget_id")
 

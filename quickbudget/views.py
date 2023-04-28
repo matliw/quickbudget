@@ -22,17 +22,20 @@ class ListAddBudgets(generics.ListCreateAPIView):
     queryset = Budget.objects.all()
     serializer_class = BudgetSerializer
 
-
     def perform_create(self, serializer):
         # Set the creator field to the current authenticated user
         serializer.validated_data['creator'] = self.request.user
-        # Create the budget object
-        budget = serializer.save()
 
-        # Add the current user as a member of the budget
-        budget.members.add(self.request.user)
+        if serializer.is_valid():
+            # Create the budget object
+            budget = serializer.save()
 
-        return Response(serializer.data)
+            # Add the current user as a member of the budget
+            budget.members.add(self.request.user)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
         return Budget.objects.filter(members=self.request.user)
@@ -57,9 +60,22 @@ class ListAddExpenses(generics.ListCreateAPIView):
     filter_backends = (filters.OrderingFilter,)
     ordering_fields = ["name", "total", "created_timestamp"]
 
+    def perform_create(self, serializer):
+        # Set the creator field to the current authenticated user
+        serializer.validated_data['author'] = self.request.user
+
+        if serializer.is_valid():
+            # Create the budget object
+            budget = serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
     def get_queryset(self):
         budget = self.kwargs["budget_id"]
-        queryset = Expense.objects.filter(budget_id=budget).order_by("created_timestamp")
+        queryset = Expense.objects.filter(budget_id=budget).order_by(
+            "created_timestamp")
         category = self.request.query_params.get("category")
         if category is not None:
             queryset = queryset.filter(category=category)
@@ -84,28 +100,32 @@ class BudgetMembers(APIView):
     queryset = Budget.objects.all()
     permission_classes = [BudgetMembersOnly]
 
+
     def put(self, request, budget_id, format=None):
         budget = Budget.objects.get(id=budget_id)
         serializer = MemberAddSerializer(budget, data=request.data)
         self.check_object_permissions(request, budget)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+        if self.request.user.id == budget.creator_id:
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_403_BAD_REQUEST)
 
     def delete(self, request, budget_id, format=None):
         budget = Budget.objects.get(id=budget_id)
         serializer = RemoveBudgetMembersSerializer(budget, data=request.data)
         self.check_object_permissions(request, budget)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+        if self.request.user.id == budget.creator_id:
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_403_BAD_REQUEST)
 
 class QuickbudgetUsers(APIView):
     queryset = User.objects.all()

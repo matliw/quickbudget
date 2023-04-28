@@ -47,6 +47,7 @@ class Expense(models.Model):
     budget_id = models.ForeignKey(Budget, on_delete=models.CASCADE, related_name="expenses")
     category = models.ForeignKey(Category, null=True, on_delete=models.SET_NULL)
     created_timestamp = models.DateTimeField(auto_now=True)
+    author = models.ForeignKey(User, null=True, on_delete=models.CASCADE, related_name="expense_owner")
 
     def __str__(self):
         return f"{self.name}"
