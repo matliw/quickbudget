@@ -8,7 +8,22 @@ class BudgetMembersOnly(permissions.BasePermission):
         if request.user.is_superuser:
             return True
 
-        if request.user in obj.members.all():
+        if request.user.id == obj.creator.id:
+            return True
+
+        return False
+
+
+class IsBudgetOwnerOrSafeMethods(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_superuser:
+            return True
+
+        if request.method in permissions.SAFE_METHODS:  # get, head, options
+            return True
+
+        current_budget = Budget.objects.get(pk=view.kwargs.get("budget_id"))
+        if request.user == current_budget.creator:
             return True
 
         return False

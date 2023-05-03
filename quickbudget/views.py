@@ -1,3 +1,6 @@
+import logging
+
+from django.http import Http404
 from rest_framework import generics, status, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -6,6 +9,7 @@ from quickbudget.api.permissions import (
     BudgetMembersOnly,
     AllBudgetExpenseMembersOnly,
     ExpenseBudgetMembersOnly, IsPostOrIsAuthenticated,
+    IsBudgetOwnerOrSafeMethods,
 )
 from quickbudget.api.serializers import (
     ExpenseSerializer,
@@ -19,8 +23,10 @@ from quickbudget.models import Budget, Expense, Category, User
 
 
 class ListAddBudgets(generics.ListCreateAPIView):
-    queryset = Budget.objects.all()
     serializer_class = BudgetSerializer
+
+    def get_queryset(self):
+        return Budget.objects.filter(members=self.request.user)
 
     def perform_create(self, serializer):
         # Set the creator field to the current authenticated user
@@ -37,15 +43,14 @@ class ListAddBudgets(generics.ListCreateAPIView):
 
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_queryset(self):
-        return Budget.objects.filter(members=self.request.user)
-
 
 class BudgetDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Budget.objects.all()
     serializer_class = BudgetSerializer
     lookup_url_kwarg = "budget_id"
-    permission_classes = [BudgetMembersOnly]
+    permission_classes = [IsBudgetOwnerOrSafeMethods]
+
+    def get_queryset(self):
+        return Budget.objects.filter(members=self.request.user)
 
 
 class AddExpenses(generics.CreateAPIView):
@@ -97,35 +102,53 @@ class ListCategoryList(generics.ListAPIView):
 
 
 class BudgetMembers(APIView):
-    queryset = Budget.objects.all()
-    permission_classes = [BudgetMembersOnly]
+    permission_classes = [BudgetMembersOnly,]
 
+    def get_queryset(self):
+        return Budget.objects.filter(creator=self.request.user)
+
+    def get_object(self, budget_id):
+        try:
+            return Budget.objects.get(id=budget_id)
+        except Budget.DoesNotExist:
+            raise Http404
 
     def put(self, request, budget_id, format=None):
-        budget = Budget.objects.get(id=budget_id)
+        budget = self.get_object(budget_id)
         serializer = MemberAddSerializer(budget, data=request.data)
         self.check_object_permissions(request, budget)
 
-        if self.request.user.id == budget.creator_id:
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
+        if self.request.user.id != budget.creator_id:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.errors, status=status.HTTP_403_BAD_REQUEST)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, budget_id, format=None):
-        budget = Budget.objects.get(id=budget_id)
+        budget = self.get_object(budget_id)
         serializer = RemoveBudgetMembersSerializer(budget, data=request.data)
         self.check_object_permissions(request, budget)
 
-        if self.request.user.id == budget.creator_id:
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
+        """1. Creator can only remove other users (non-creator member)
+           2. Creator can remove himself
+           3. Creator should be able to access without being a member"""
 
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.errors, status=status.HTTP_403_BAD_REQUEST)
+        deleted_member = int(self.request.data['members'][0])
+        if deleted_member == budget.creator_id:
+            return Response(status=status.HTTP_403_FORBIDDEN)  # prevent creator from removing himself from the member table
+
+        if serializer.is_valid():
+
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
+
 
 class QuickbudgetUsers(APIView):
     queryset = User.objects.all()
