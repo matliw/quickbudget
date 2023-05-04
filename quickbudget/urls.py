@@ -18,7 +18,7 @@ urlpatterns = [
     path("api/budgets/<uuid:budget_id>/expenses/<uuid:expense_id>/", ExpenseDetail.as_view(), name="get-update-remove-expense-details"),
     path("api/categories/", ListCategoryList.as_view(), name="category-list"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),  # yaml schema is generated
-    path("api/docs/swagger-ui/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),  # swagger-ui endpoint for API visualization
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),  # swagger-ui endpoint for API visualization
     path("api/users/", QuickbudgetUsers.as_view(), name="application-user-add-remove-members"),
     path("api/search/", SearchBudgetExpenses.as_view(), name="search-for-expenses")
 ]
