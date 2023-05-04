@@ -34,7 +34,8 @@ class ExpenseBudgetMembersOnly(permissions.BasePermission):
         if request.user.is_superuser:
             return True
 
-        if request.user in obj.shopping_list.members.all():
+        current_budget = Budget.objects.get(pk=view.kwargs.get("budget_id"))
+        if request.user in current_budget.members.all():
             return True
 
         return False
