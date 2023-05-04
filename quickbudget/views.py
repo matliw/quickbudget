@@ -1,5 +1,3 @@
-import logging
-
 from django.http import Http404
 from rest_framework import generics, status, filters
 from rest_framework.response import Response
@@ -32,16 +30,17 @@ class ListAddBudgets(generics.ListCreateAPIView):
         # Set the creator field to the current authenticated user
         serializer.validated_data['creator'] = self.request.user
 
-        if serializer.is_valid():
-            # Create the budget object
-            budget = serializer.save()
+        if not serializer.is_valid():
+            return Response(serializer.data,
+                            status=status.HTTP_400_BAD_REQUEST)
 
-            # Add the current user as a member of the budget
-            budget.members.add(self.request.user)
+        # Create the budget object
+        budget = serializer.save()
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Add the current user as a member of the budget
+        budget.members.add(self.request.user)
 
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class BudgetDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -64,26 +63,28 @@ class ListAddExpenses(generics.ListCreateAPIView):
     permission_classes = [AllBudgetExpenseMembersOnly]
     filter_backends = (filters.OrderingFilter,)
     ordering_fields = ["name", "total", "created_timestamp"]
+    ordering = ["created_timestamp"]
 
     def perform_create(self, serializer):
         # Set the creator field to the current authenticated user
         serializer.validated_data['author'] = self.request.user
 
-        if serializer.is_valid():
-            # Create the budget object
-            budget = serializer.save()
+        if not serializer.is_valid():
+            return Response(serializer.data,
+                            status=status.HTTP_400_BAD_REQUEST)
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        # Create the budget object
+        budget = serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         budget = self.kwargs["budget_id"]
-        queryset = Expense.objects.filter(budget_id=budget).order_by(
-            "created_timestamp")
-        category = self.request.query_params.get("category")
-        if category is not None:
-            queryset = queryset.filter(category=category)
+        queryset = Expense.objects.filter(budget_id=budget)\
+        #     .order_by(
+        #     "created_timestamp")
+        # category = self.request.query_params.get("category")
+        # if category is not None:
+        #     queryset = queryset.filter(category=category)
 
         return queryset
 
@@ -121,12 +122,11 @@ class BudgetMembers(APIView):
         if self.request.user.id != budget.creator_id:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-
-        return Response(serializer.errors,
+        if not serializer.is_valid():
+            return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data)
 
     def delete(self, request, budget_id, format=None):
         budget = self.get_object(budget_id)
@@ -141,13 +141,12 @@ class BudgetMembers(APIView):
         if deleted_member == budget.creator_id:
             return Response(status=status.HTTP_403_FORBIDDEN)  # prevent creator from removing himself from the member table
 
-        if serializer.is_valid():
+        if not serializer.is_valid():
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
 
-            serializer.save()
-            return Response(serializer.data)
-
-        return Response(serializer.errors,
-                        status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data)
 
 
 class QuickbudgetUsers(APIView):
@@ -157,12 +156,13 @@ class QuickbudgetUsers(APIView):
 
     def post(self, request, format=None):
         serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        return Response(serializer.errors,
-                        status=status.HTTP_400_BAD_REQUEST)
+        if not serializer.is_valid():
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, format=None):
         user = request.user
