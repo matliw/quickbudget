@@ -33,9 +33,7 @@ class ExpenseSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created_timestamp", "budget_id")
 
     def create(self, validated_data, **kwargs):
-        validated_data["budget_id_id"] = self.context["request"].parser_context[
-            "kwargs"
-        ]["budget_id"]
+        validated_data["budget_id_id"] = self.context["request"].parser_context["kwargs"]["budget_id"]
         return super(ExpenseSerializer, self).create(validated_data)
 
 
@@ -63,8 +61,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "description"]
 
 
-class \
-        MemberAddSerializer(serializers.ModelSerializer):
+class MemberAddSerializer(serializers.ModelSerializer):
     class Meta:
         model = Budget
         fields = ["members"]
