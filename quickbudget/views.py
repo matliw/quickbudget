@@ -15,7 +15,7 @@ from quickbudget.api.serializers import (
     BudgetSerializer,
     MemberAddSerializer,
     RemoveBudgetMembersSerializer,
-    UserSerializer,
+    UserCreateSerializer,
 )
 from quickbudget.models import Budget, Expense, Category, User
 
@@ -105,7 +105,7 @@ class BudgetMembers(APIView):
         budget = get_object_or_404(Budget.objects, id=budget_id)
         serializer = MemberAddSerializer(budget, data=request.data)
 
-        if self.request.user.id != budget.creator_id:
+        if self.request.user.id != budget.created_by.id:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         if not serializer.is_valid():
@@ -114,19 +114,18 @@ class BudgetMembers(APIView):
         return Response(serializer.data)
 
     def delete(self, request, budget_id, format=None):
-        budget = self.get_object(budget_id)
+        budget = get_object_or_404(Budget.objects, id=budget_id)
         serializer = RemoveBudgetMembersSerializer(budget, data=request.data)
 
         """1. Creator can only remove other users (non-creator member)
            2. Creator can remove himself
            3. Creator should be able to access without being a member"""
 
-        if budget.creator_id in self.request.data['members']:
-            return Response(status=status.HTTP_403_FORBIDDEN)  # prevent creator from removing himself from the member table
+        if str(budget.created_by.id) in self.request.data['members']:
+            return Response(status=status.HTTP_403_FORBIDDEN)  # prevent creator fro m being removed from the member table
 
         if not serializer.is_valid():
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         serializer.save()
         return Response(serializer.data)
@@ -134,11 +133,11 @@ class BudgetMembers(APIView):
 
 class QuickbudgetUsers(APIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserCreateSerializer
     permission_classes = [IsPostOrIsAuthenticated]
 
     def post(self, request, format=None):
-        serializer = UserSerializer(data=request.data)
+        serializer = UserCreateSerializer(data=request.data)
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

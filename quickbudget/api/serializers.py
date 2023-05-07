@@ -4,10 +4,16 @@ from quickbudget import models
 from quickbudget.models import Budget, Expense, Category, User
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "password"]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.pop("password")
+
+        return representation
 
     def create(self, validated_data):
         user = models.User.objects.create_user(
@@ -16,8 +22,6 @@ class UserSerializer(serializers.ModelSerializer):
 
         return user
 
-
-# todo create a new serializer for nesting without password
 
 class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,7 +45,7 @@ class ExpenseSerializer(serializers.ModelSerializer):
 
 class BudgetSerializer(serializers.ModelSerializer):
     expenses = ExpenseSerializer(many=True, read_only=True)
-    members = UserSerializer(many=True, read_only=True)
+    members = UserCreateSerializer(many=True, read_only=True)
 
     class Meta:
         model = Budget
