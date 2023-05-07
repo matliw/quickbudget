@@ -17,6 +17,8 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
+# todo create a new serializer for nesting without password
+
 class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
@@ -27,13 +29,13 @@ class ExpenseSerializer(serializers.ModelSerializer):
             "description",
             "category",
             "created_timestamp",
-            "budget_id",
-            "author"
+            "budget",
+            "created_by"
         ]
-        read_only_fields = ("id", "created_timestamp", "budget_id")
+        read_only_fields = ("id", "created_timestamp", "budget")
 
     def create(self, validated_data, **kwargs):
-        validated_data["budget_id_id"] = self.context["request"].parser_context["kwargs"]["budget_id"]
+        validated_data["budget_id"] = self.context["request"].parser_context["kwargs"]["budget_id"]
         return super(ExpenseSerializer, self).create(validated_data)
 
 
@@ -51,7 +53,7 @@ class BudgetSerializer(serializers.ModelSerializer):
             "created_timestamp",
             "expenses",
             "members",
-            "creator"
+            "created_by"
         ]
 
 

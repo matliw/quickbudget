@@ -29,11 +29,10 @@ class ListAddBudgets(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         # Set the creator field to the current authenticated user
-        serializer.validated_data['creator'] = self.request.user
+        serializer.validated_data['created_by'] = self.request.user
 
         if not serializer.is_valid():
-            return Response(serializer.data,
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
         # Create the budget object
         budget = serializer.save()
@@ -65,15 +64,16 @@ class ListAddExpenses(generics.ListCreateAPIView):
     ordering = ["-created_timestamp"]
 
     def perform_create(self, serializer):
-        # Set the creator field to the current authenticated user
-        serializer.validated_data['author'] = self.request.user
+        # Set the created_by field to the current authenticated user
+        serializer.validated_data['created_by'] = self.request.user
 
         if not serializer.is_valid():
             return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
         # Create the budget object
-        budget = serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         budget = self.kwargs["budget_id"]

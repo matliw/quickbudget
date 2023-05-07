@@ -43,7 +43,7 @@ class Expense(models.Model):
     name = models.CharField(max_length=120)
     total = models.DecimalField(max_digits=8, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
     description = models.CharField(max_length=200, null=True, blank=True)
-    budget_id = models.ForeignKey(Budget, on_delete=models.CASCADE, related_name="expenses")
+    budget = models.ForeignKey(Budget, on_delete=models.CASCADE, related_name="expenses")
     category = models.ForeignKey(Category, null=True, on_delete=models.SET_NULL)
     created_timestamp = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, null=True, on_delete=models.CASCADE, related_name="expense_owner")
