@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from quickbudget import models
-from quickbudget.models import Budget, Expense, Category, User
+from quickbudget.models import Budget, Category, Expense, User
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -26,16 +26,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
-        fields = [
-            "id",
-            "name",
-            "total",
-            "description",
-            "category",
-            "created_timestamp",
-            "budget",
-            "created_by"
-        ]
+        fields = ["id", "name", "total", "description", "category", "created_timestamp", "budget", "created_by"]
         read_only_fields = ("id", "created_timestamp", "budget")
 
     def create(self, validated_data, **kwargs):
@@ -57,7 +48,7 @@ class BudgetSerializer(serializers.ModelSerializer):
             "created_timestamp",
             "expenses",
             "members",
-            "created_by"
+            "created_by",
         ]
 
 

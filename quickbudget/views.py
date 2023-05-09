@@ -1,23 +1,24 @@
-from rest_framework import generics, status, filters
+from django.shortcuts import get_object_or_404
+from rest_framework import filters, generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.shortcuts import get_object_or_404
 
 from quickbudget.api.permissions import (
-    BudgetMembersOnly,
     AllBudgetExpenseMembersOnly,
-    ExpenseBudgetMembersOnly, IsPostOrIsAuthenticated,
+    BudgetMembersOnly,
+    ExpenseBudgetMembersOnly,
     IsBudgetOwnerOrSafeMethods,
+    IsPostOrIsAuthenticated,
 )
 from quickbudget.api.serializers import (
-    ExpenseSerializer,
-    CategoriesSerializer,
     BudgetSerializer,
+    CategoriesSerializer,
+    ExpenseSerializer,
     MemberAddSerializer,
     RemoveBudgetMembersSerializer,
     UserCreateSerializer,
 )
-from quickbudget.models import Budget, Expense, Category, User
+from quickbudget.models import Budget, Category, Expense, User
 
 
 class ListAddBudgets(generics.ListCreateAPIView):
@@ -29,7 +30,7 @@ class ListAddBudgets(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         # Set the creator field to the current authenticated user
-        serializer.validated_data['created_by'] = self.request.user
+        serializer.validated_data["created_by"] = self.request.user
 
         if not serializer.is_valid():
             return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
@@ -65,7 +66,7 @@ class ListAddExpenses(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         # Set the created_by field to the current authenticated user
-        serializer.validated_data['created_by'] = self.request.user
+        serializer.validated_data["created_by"] = self.request.user
 
         if not serializer.is_valid():
             return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
@@ -96,7 +97,9 @@ class ListCategoryList(generics.ListAPIView):
 
 
 class BudgetMembers(APIView):
-    permission_classes = [BudgetMembersOnly,]
+    permission_classes = [
+        BudgetMembersOnly,
+    ]
 
     def get_queryset(self):
         return Budget.objects.filter(creator=self.request.user)
@@ -121,8 +124,10 @@ class BudgetMembers(APIView):
            2. Creator can remove himself
            3. Creator should be able to access without being a member"""
 
-        if str(budget.created_by.id) in self.request.data['members']:
-            return Response(status=status.HTTP_403_FORBIDDEN)  # prevent creator fro m being removed from the member table
+        if str(budget.created_by.id) in self.request.data["members"]:
+            return Response(
+                status=status.HTTP_403_FORBIDDEN
+            )  # prevent creator fro m being removed from the member table
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

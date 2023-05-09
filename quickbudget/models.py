@@ -18,7 +18,9 @@ class User(AbstractUser):
 class Budget(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=120)
-    budget_limit = models.DecimalField(max_digits=8, decimal_places=2, null=True, validators=[MinValueValidator(Decimal("0.01"))])
+    budget_limit = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, validators=[MinValueValidator(Decimal("0.01"))]
+    )
     description = models.CharField(max_length=200, null=True, blank=True)
     created_timestamp = models.DateTimeField(auto_now=True)
     members = models.ManyToManyField(settings.AUTH_USER_MODEL)
@@ -42,7 +44,7 @@ class Category(models.Model):
 class Expense(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     name = models.CharField(max_length=120)
-    total = models.DecimalField(max_digits=8, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+    total = models.DecimalField(max_digits=8, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))])
     description = models.CharField(max_length=200, null=True, blank=True)
     budget = models.ForeignKey(Budget, on_delete=models.CASCADE, related_name="expenses")
     category = models.ForeignKey(Category, null=True, on_delete=models.SET_NULL)

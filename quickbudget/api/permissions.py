@@ -53,7 +53,6 @@ class AllBudgetExpenseMembersOnly(permissions.BasePermission):
 
 
 class IsPostOrIsAuthenticated(permissions.BasePermission):
-
     def has_permission(self, request, view):
         """allow POST method without authentication"""
         if request.method == "POST":
