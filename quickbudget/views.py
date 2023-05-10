@@ -100,6 +100,7 @@ class BudgetMembers(APIView):
     permission_classes = [
         BudgetMembersOnly,
     ]
+    serializer_class = MemberAddSerializer
 
     def get_queryset(self):
         return Budget.objects.filter(creator=self.request.user)
