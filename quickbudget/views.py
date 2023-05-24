@@ -26,7 +26,7 @@ class ListAddBudgets(generics.ListCreateAPIView):
     ordering = ["-last_interaction"]
 
     def get_queryset(self):
-        return Budget.objects.filter(members=self.request.user)
+        return Budget.objects.select_related("created_by").prefetch_related("members").filter(members=self.request.user)
 
     def perform_create(self, serializer):
         # Set the creator field to the current authenticated user
@@ -45,14 +45,14 @@ class ListAddBudgets(generics.ListCreateAPIView):
 
 
 class BudgetDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Budget.objects.all()
+    queryset = Budget.objects.select_related("created_by").prefetch_related("members").all()
     serializer_class = BudgetSerializer
     lookup_url_kwarg = "budget_id"
     permission_classes = [IsBudgetOwnerOrSafeMethods]
 
 
 class AddExpenses(generics.CreateAPIView):
-    queryset = Expense.objects.all()
+    queryset = Expense.objects.select_related("budget", "category", "created_by").all()
     serializer_class = ExpenseSerializer
     permission_classes = [AllBudgetExpenseMembersOnly]
 
@@ -63,6 +63,12 @@ class ListAddExpenses(generics.ListCreateAPIView):
     filter_backends = (filters.OrderingFilter,)
     ordering_fields = ["name", "total", "created_timestamp", "category"]
     ordering = ["-created_timestamp"]
+
+    def get_queryset(self):
+        budget = self.kwargs["budget_id"]
+        queryset = Expense.objects.select_related("budget", "category", "created_by").filter(budget_id=budget)
+
+        return queryset
 
     def perform_create(self, serializer):
         # Set the created_by field to the current authenticated user
@@ -76,15 +82,10 @@ class ListAddExpenses(generics.ListCreateAPIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def get_queryset(self):
-        budget = self.kwargs["budget_id"]
-        queryset = Expense.objects.filter(budget_id=budget)
-
-        return queryset
 
 
 class ExpenseDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Expense.objects.all()
+    queryset = Expense.objects.select_related("budget", "category", "created_by").all()
     serializer_class = ExpenseSerializer
     lookup_url_kwarg = "expense_id"
 
@@ -103,10 +104,10 @@ class BudgetMembers(APIView):
     serializer_class = MemberAddSerializer
 
     def get_queryset(self):
-        return Budget.objects.filter(creator=self.request.user)
+        return Budget.objects.select_related("created_by").prefetch_related("members").filter(creator=self.request.user)
 
     def put(self, request, budget_id, format=None):
-        budget = get_object_or_404(Budget.objects, id=budget_id)
+        budget = get_object_or_404(Budget.objects.select_related("created_by").prefetch_related("members"), id=budget_id)
         serializer = MemberAddSerializer(budget, data=request.data)
 
         if self.request.user.id != budget.created_by.id:
@@ -118,11 +119,11 @@ class BudgetMembers(APIView):
         return Response(serializer.data)
 
     def delete(self, request, budget_id, format=None):
-        budget = get_object_or_404(Budget.objects, id=budget_id)
+        budget = get_object_or_404(Budget.objects.select_related("created_by").prefetch_related("members"), id=budget_id)
         serializer = RemoveBudgetMembersSerializer(budget, data=request.data)
 
         """1. Creator can only remove other users (non-creator member)
-           2. Creator can remove himself
+           2. Creator cannot remove himself
            3. Creator should be able to access without being a member"""
 
         if str(budget.created_by.id) in self.request.data["members"]:
@@ -159,9 +160,7 @@ class QuickbudgetUsers(APIView):
 
 
 class SearchBudgetExpenses(generics.ListAPIView):
-    queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
-
     filter_backends = (filters.SearchFilter,)
     search_fields = ["name"]
 
