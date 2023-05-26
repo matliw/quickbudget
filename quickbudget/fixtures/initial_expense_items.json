@@ -1,0 +1,13 @@
+[
+  {
+    "model": "quickbudget.Expense",
+    "fields": {
+      "name": "Chicken",
+      "total": 123,
+      "description": "",
+      "created_timestamp": "2022-01-02 11:11",
+      "category": "",
+      "budget_id": "b63f159a-a746-4cef-8b61-5da5c3abea65"
+    }
+  }
+]

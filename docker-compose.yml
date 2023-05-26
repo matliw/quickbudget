@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+
+  quickbudget_db:
+    image: postgres:14-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=budget_user
+      - POSTGRES_PASSWORD=budget_password
+      - POSTGRES_DB=budget_db
+
+  quickbudget:
+    build: .
+    command: gunicorn core.wsgi:application --bind 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://budget_user:budget_password@quickbudget_db:5432/budget_db
+    depends_on:
+      - quickbudget_db
+
+volumes:
+  postgres_data:
