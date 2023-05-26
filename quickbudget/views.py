@@ -83,14 +83,17 @@ class ListAddExpenses(generics.ListCreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-
 class ExpenseDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Expense.objects.select_related("budget", "category", "created_by").all()
     serializer_class = ExpenseSerializer
     lookup_url_kwarg = "expense_id"
-
     permission_classes = [ExpenseBudgetMembersOnly]
 
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"message": "Expense deleted successfully."})
 
 class ListCategoryList(generics.ListAPIView):
     queryset = Category.objects.all()
@@ -107,11 +110,12 @@ class BudgetMembers(APIView):
         return Budget.objects.select_related("created_by").prefetch_related("members").filter(creator=self.request.user)
 
     def put(self, request, budget_id, format=None):
-        budget = get_object_or_404(Budget.objects.select_related("created_by").prefetch_related("members"), id=budget_id)
+        budget = get_object_or_404(Budget.objects.select_related("created_by").prefetch_related("members"),
+                                   id=budget_id)
         serializer = MemberAddSerializer(budget, data=request.data)
 
         if self.request.user.id != budget.created_by.id:
-            return Response("Only owner of the budget can add members", status=status.HTTP_403_FORBIDDEN)
+            return Response({"message": "Only owner of the budget can add members"}, status=status.HTTP_403_FORBIDDEN)
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -119,7 +123,8 @@ class BudgetMembers(APIView):
         return Response(serializer.data)
 
     def delete(self, request, budget_id, format=None):
-        budget = get_object_or_404(Budget.objects.select_related("created_by").prefetch_related("members"), id=budget_id)
+        budget = get_object_or_404(Budget.objects.select_related("created_by").prefetch_related("members"),
+                                   id=budget_id)
         serializer = RemoveBudgetMembersSerializer(budget, data=request.data)
 
         """1. Creator can only remove other users (non-creator member)
@@ -127,9 +132,9 @@ class BudgetMembers(APIView):
            3. Creator should be able to access without being a member"""
 
         if str(budget.created_by.id) in self.request.data["members"]:
-            return Response("Budget owner cannot be removed. Delete the budget instead.",
-                status=status.HTTP_403_FORBIDDEN
-            )  # prevent creator fro m being removed from the member table
+            return Response({"message":"Budget owner cannot be removed. Delete the budget instead."},
+                            status=status.HTTP_403_FORBIDDEN
+                            )  # prevent creator fro m being removed from the member table
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

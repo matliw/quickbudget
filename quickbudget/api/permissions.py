@@ -34,7 +34,7 @@ class ExpenseBudgetMembersOnly(permissions.BasePermission):
         if request.user.is_superuser:
             return True
 
-        if request.user in obj.members.all():
+        if request.user in obj.budget.members.all():
             return True
 
         return False
