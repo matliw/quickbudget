@@ -111,7 +111,7 @@ class BudgetMembers(APIView):
         serializer = MemberAddSerializer(budget, data=request.data)
 
         if self.request.user.id != budget.created_by.id:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response("Only owner of the budget can add members", status=status.HTTP_403_FORBIDDEN)
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -127,7 +127,7 @@ class BudgetMembers(APIView):
            3. Creator should be able to access without being a member"""
 
         if str(budget.created_by.id) in self.request.data["members"]:
-            return Response(
+            return Response("Budget owner cannot be removed. Delete the budget instead.",
                 status=status.HTTP_403_FORBIDDEN
             )  # prevent creator fro m being removed from the member table
 
